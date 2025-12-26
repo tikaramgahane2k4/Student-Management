@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="card center">
+  <h2 style="margin-top: 0; margin-bottom: 1.5rem;">Add New Student</h2>
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="John Doe" required>
+    </div>
+
+    <div class="form-group">
+      <label for="age">Age</label>
+      <input type="number" id="age" name="age" placeholder="e.g. 21" required min="16" max="100">
+    </div>
+
+    <div class="form-group">
+      <label for="course">Course</label>
+      <select id="course" name="course" required>
+        <option value="" disabled selected>Select a course</option>
+        {% for course in courses %}
+        <option value="{{ course.id }}">{{ course.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="submit" style="flex: 1;">Add Student</button>
+      <a href="{{ url_for('dashboard') }}" class="btn secondary" style="flex: 1; text-align: center;">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+      🎓 Student Management
+    </a>
+    <div class="navbar-menu">
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+      {% endif %}
+      <button onclick="toggleDark()" class="theme-toggle" title="Toggle Dark Mode">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert">
+      {{ messages[0] }}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="footer">
+    <p>&copy; 2025 Student Management System | Built with ❤️ using Flask & PostgreSQL</p>
+    <p style="margin-top: 10px;">
+      For any query contact me:
+      <a href="https://github.com/tikaramgahane2k4" target="_blank" style="margin: 0 5px;">GitHub</a> |
+      <a href="https://www.linkedin.com/in/tikaram-gahane-1804bb343/" target="_blank"
+        style="margin: 0 5px;">LinkedIn</a>
+    </p>
+  </footer>
+
+  <script>
+    // Check local storage for theme preference
+    const savedTheme = localStorage.getItem('theme');
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark');
+      themeIcon.textContent = '☀️';
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
+</body>
+
+</html>
