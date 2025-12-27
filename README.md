@@ -36,18 +36,27 @@ A full-stack **Student Management System** built using **Flask and PostgreSQL**,
 
 student-management/
 │
+
 ├── app.py
+
 ├── config.py
+
 ├── models.py
+
 ├── requirements.txt
+
 │
+
+
 ├── templates/
 │ ├── layout.html
 │ ├── login.html
 │ ├── dashboard.html
 │ ├── students.html
 │ └── courses.html
+
 │
+
 ├── static/
 │ ├── css/style.css
 │
