@@ -11,6 +11,11 @@
     </div>
 
     <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" value="{{ student.email }}" required>
+    </div>
+
+    <div class="form-group">
       <label for="age">Age</label>
       <input type="number" id="age" name="age" value="{{ student.age }}" required min="16" max="100">
     </div>

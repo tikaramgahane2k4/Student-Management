@@ -68,7 +68,10 @@ def dashboard():
 
     query = Student.query
     if search:
-        query = query.filter(Student.name.ilike(f"%{search}%"))
+        query = query.filter(
+            (Student.name.ilike(f"%{search}%")) | 
+            (Student.email.ilike(f"%{search}%"))
+        )
 
     students = query.paginate(page=page, per_page=5)
 
@@ -83,6 +86,9 @@ def dashboard():
         search=search
     )
 
+
+
+
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add_student():
@@ -90,22 +96,40 @@ def add_student():
 
     if request.method == "POST":
         name = request.form["name"]
+        email = request.form["email"]
         age = request.form["age"]
         course_id = request.form["course"]
 
-        existing_student = Student.query.filter_by(
-            name=name,
-            course_id=course_id
-        ).first()
+        # Validate required fields
+        if not name or not email or not age or not course_id:
+            flash("All fields are required!", "error")
+            return render_template("add_student.html", courses=courses, form=request.form)
 
-        if existing_student:
-            flash("Student already exists in this course ❌")
-            return redirect(url_for("add_student"))
+        # Validate email format (simple regex or check)
+        if "@" not in email or "." not in email:
+            flash("Invalid email format!", "error")
+            return render_template("add_student.html", courses=courses, form=request.form)
 
-        db.session.add(Student(name=name, age=age, course_id=course_id))
-        db.session.commit()
-        flash("Student added successfully ✅")
-        return redirect(url_for("dashboard"))
+        # Check for duplicates
+        existing_email = Student.query.filter_by(email=email).first()
+        if existing_email:
+            flash("Student with this email already exists!", "error")
+            return render_template("add_student.html", courses=courses, form=request.form)
+
+        existing_in_course = Student.query.filter_by(name=name, course_id=course_id).first()
+        if existing_in_course:
+             flash("Student already exists in this course!", "error")
+             return render_template("add_student.html", courses=courses, form=request.form)
+
+        try:
+            db.session.add(Student(name=name, email=email, age=age, course_id=course_id))
+            db.session.commit()
+            flash("Student added successfully ✅", "success")
+            return redirect(url_for("dashboard"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding student: {str(e)}", "error")
+            return render_template("add_student.html", courses=courses, form=request.form)
 
     return render_template("add_student.html", courses=courses)
 
@@ -117,22 +141,54 @@ def edit_student(id):
     courses = Course.query.all()
 
     if request.method == "POST":
-        student.name = request.form["name"]
-        student.age = request.form["age"]
-        student.course_id = request.form["course"]
-        db.session.commit()
-        flash("Student updated successfully")
-        return redirect(url_for("dashboard"))
+        name = request.form["name"]
+        email = request.form["email"]
+        age = request.form["age"]
+        course_id = request.form["course"]
+
+        if not name or not email or not age or not course_id:
+            flash("All fields are required!", "error")
+            return render_template("edit_student.html", student=student, courses=courses)
+
+        # Check unique email (exclude current student)
+        existing_email = Student.query.filter(Student.email == email, Student.id != id).first()
+        if existing_email:
+            flash("Email already taken by another student!", "error")
+            return render_template("edit_student.html", student=student, courses=courses)
+
+        try:
+            student.name = name
+            student.email = email
+            student.age = age
+            student.course_id = course_id
+            db.session.commit()
+            flash("Student updated successfully ✅", "success")
+            return redirect(url_for("dashboard"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error updating student: {str(e)}", "error")
+            return render_template("edit_student.html", student=student, courses=courses)
 
     return render_template("edit_student.html", student=student, courses=courses)
 
 @app.route("/delete/<int:id>")
 @login_required
 def delete_student(id):
-    db.session.delete(Student.query.get(id))
-    db.session.commit()
-    flash("Student deleted")
+    try:
+        db.session.delete(Student.query.get_or_404(id))
+        db.session.commit()
+        flash("Student deleted successfully 🗑️", "success")
+    except Exception as e:
+        flash(f"Error deleting student: {str(e)}", "error")
     return redirect(url_for("dashboard"))
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 if __name__ == "__main__":
     app.run()
