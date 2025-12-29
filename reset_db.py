@@ -11,7 +11,7 @@ with app.app_context():
         
     # Create default courses
     course_names = [
-        "Python", "Web Development", "Data Science", "AI Engineer",
+        "Python Development", "Web Development", "Data Science", "AI Engineer",
         "Computer Science", "Bachlor of Science", "Civil Engineering",
         "Electrical Engineering", "Mechanical Engineering", "Software Engineering",
         "Cyber Security", "Information Technology", "Business Administration",
